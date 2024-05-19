@@ -223,13 +223,13 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
           return "";
         });
 
-      const text = `"{` + pairs.join(",") + `}"`;
+      const text = pairs.join(",");
 
       if (args.length > 0) {
-        return `{format!(r#${text}#, ${args.join(", ")})}`;
+        return `{format!("{{${text}}}", ${args.join(", ")})}`;
       }
 
-      return text;
+      return `"{` + text + `}"`;
     })
     .replace(/{\`.+/g, (substr) => {
       const lastIndex = substr.lastIndexOf("`}");

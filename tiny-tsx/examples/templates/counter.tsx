@@ -7,9 +7,9 @@
     <button
       class="w-8 h-8 bg-red-600 text-white rounded-md shadow-md"
       hx-get="/@counter"
-      hx-vals={json!({
+      hx-vals={{
         "count": count - 1,
-      })}
+      }}
       hx-trigger="click"
       hx-replace-url={`/counter?count=${count - 1}`}
     >
