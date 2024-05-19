@@ -43,7 +43,6 @@ pub fn counter(count: i32) -> String {
       hx-replace-url={`/counter?count=${count + 1}`}
       hx-vals={{
         count,
-        // "count": count - 1,
         "value": 1,
         "hello": "world",
       }}

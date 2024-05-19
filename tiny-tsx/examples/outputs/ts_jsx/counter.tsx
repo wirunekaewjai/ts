@@ -26,7 +26,6 @@ export const counter = (count: number) => (
       hx-replace-url={`/counter?count=${count + 1}`}
       hx-vals={{
         count,
-        // "count": count - 1,
         "value": 1,
         "hello": "world",
       }}

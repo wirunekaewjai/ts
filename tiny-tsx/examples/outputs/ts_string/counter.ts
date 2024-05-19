@@ -29,7 +29,6 @@ export const counter = (count: number) => `<div class="p-2 flex flex-row items-c
       hx-replace-url={`/counter?count=${count + 1}`}
       hx-vals={{
         count,
-        // "count": count - 1,
         "value": 1,
         "hello": "world",
       }}
