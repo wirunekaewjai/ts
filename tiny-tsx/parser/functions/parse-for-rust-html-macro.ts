@@ -162,6 +162,12 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
+  const fnUses: string[] = [
+    "use html_to_string_macro::html;",
+  ];
+
+  let hasJson = false;
+
   const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
@@ -179,6 +185,18 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
       // console.log("template:", parseTemplateLiteral(template));
 
       return `{${parseTemplateLiteral(template)}}` + other;
+    })
+    .replace(/{{[^}]+}}/g, (substr) => {
+      hasJson = true;
+
+      const text = substr
+        .slice(2, -2)
+        .trim()
+        .replace(/[^\s]+:/g, (key) => {
+          return `"${key.slice(0, -1)}":`;
+        });
+
+      return `{json!(${text}).to_string()}`;
     })
     .split(/\r?\n/g)
     .map((line, index) => {
@@ -201,7 +219,10 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
     })
     .join("\n");
 
-  const fnUses = `use html_to_string_macro::html;`;
+  if (hasJson) {
+    fnUses.push("use serde_json::json;");
+  }
+
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [
     `pub fn ${fnName}(${fnArgs}) -> String {`,
@@ -210,7 +231,7 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
   ].join("\n");
 
   const lines: string[] = [
-    fnUses,
+    ...fnUses,
   ];
 
   if (fnStructs) {

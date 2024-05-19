@@ -21,13 +21,34 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
   const fnContentRaw = arr[1].trim();
 
   let fnContent = await parseJsxToHtmlString(fileName, input);
+  let hasJson = false;
 
   const fmtArgs: string[] = [];
+  const fnUses: string[] = [];
 
-  fnContent = fnContent.replace(/\${[^}]+}/g, (substr) => {
-    fmtArgs.push(substr.slice(2, -1));
-    return "{}";
-  });
+  fnContent = fnContent
+    .replace(/\${[^}]+}/g, (substr) => {
+      if (substr.startsWith("${{")) {
+        hasJson = true;
+
+        const text = substr
+          .slice(3, -1)
+          .trim()
+          .replace(/[^\s]+:/g, (key) => {
+            return `"${key.slice(0, -1)}":`;
+          });
+
+        fmtArgs.push(`json!({${text}}).to_string()`);
+        return "{";
+      }
+
+      fmtArgs.push(substr.slice(2, -1));
+      return "{}";
+    });
+
+  if (hasJson) {
+    fnUses.push("use serde_json::json;");
+  }
 
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExportContent: string[] = [];
@@ -44,7 +65,12 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
     `}`,
   ].join("\n");
 
+  if (fnUses.length > 0) {
+    fnUses.push("");
+  }
+
   const lines: string[] = [
+    ...fnUses,
     fnStructs,
     "",
     fnExport,

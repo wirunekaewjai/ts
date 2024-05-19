@@ -20,7 +20,12 @@ export async function parseJsFunction(fileName: string, input: string, namespace
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContentRaw = arr[1].trim();
 
-  const fnContentHtml = await parseJsxToHtmlString(fileName, input);
+  let fnContentHtml = await parseJsxToHtmlString(fileName, input);
+
+  fnContentHtml = fnContentHtml.replace(/\${{[^}]+}}/g, (substr) => {
+    return "${JSON.stringify(" + substr.slice(2, -1) + ")}";
+  });
+
   const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;`;
   const fnOutput = `${fnInterfaces}\n${fnExport}\n\n/*\n${fnContentRaw}\n*/`;
 

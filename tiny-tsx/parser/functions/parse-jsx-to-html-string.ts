@@ -49,6 +49,13 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   let incremental = 0;
 
   const fnContentPre = fnContent
+    .replace(/{{[^}]+}}/g, (substr) => {
+      const value = "${" + substr.slice(1, -1) + "}";
+      const key = `${hash}_${++incremental}`;
+      stack.push([key, value]);
+
+      return "{\"" + key + "\"}";
+    })
     .replace(/({`[^`]+`})|({[^}]+})/g, (substr) => {
       const value = "${" + substr.slice(1, -1) + "}";
       const key = `${hash}_${++incremental}`;
@@ -82,7 +89,6 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
     const relativePath = path.relative(__dirname, build.outputs[0].path);
 
     fnContentPost = getContent(relativePath, fnName, 10);
-
     while (stack.length > 0) {
       const entry = stack.pop();
 
