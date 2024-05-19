@@ -12,7 +12,7 @@ pub fn counter(count: i32) -> String {
         <button
           class="w-8 h-8 bg-red-600 text-white rounded-md shadow-md"
           hx-get={format!("/@counter?count={}", count - 1)}
-          hx-vals={json!("count": count + 1).to_string()}
+          hx-vals={json!({"count": count + 1})}
           hx-trigger="click"
           hx-replace-url={format!("/counter?count={}", count - 1)}
         >
