@@ -20,8 +20,8 @@ export async function parseJsFunction(fileName: string, input: string) {
   const fnContentRaw = arr[1].trim();
 
   const fnContentHtml = await parseJsxToHtmlString(fileName, input);
-  const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;\n\n/*\n${fnContentRaw}\n*/`;
-  const fnOutput = `${fnInterfaces}\n${fnExport}`;
+  const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;`;
+  const fnOutput = `${fnInterfaces}\n${fnExport}\n/*\n${fnContentRaw}\n*/`;
 
   return fnOutput.trim();
 }

@@ -36,29 +36,23 @@ async function parseRsFunction(fileName: string, input: string) {
     fmtLines.push("");
   }
 
-  const fnUses = `use html_to_string_macro::html;`;
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [
     `pub fn ${fnName}(${fnArgs}) -> String {`,
     fmtLines.join("\n"),
     `    return format!(r#"${fnContent}"#, ${fmtArgs.join(", ")});`,
     `}`,
-    "",
-    "",
-    `/*\n${fnContentRaw}\n*/`,
   ].join("\n");
 
   const lines: string[] = [
-    fnUses,
+    fnStructs,
+    "",
+    fnExport,
+    "",
+    "/*",
+    fnContentRaw,
+    "*/",
   ];
-
-  if (fnStructs) {
-    lines.push("");
-    lines.push(fnStructs);
-  }
-
-  lines.push("");
-  lines.push(fnExport);
 
   return lines.join("\n").trim() + "\n";
 }
