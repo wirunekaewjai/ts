@@ -162,12 +162,6 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
-  const fnUses: string[] = [
-    "use html_to_string_macro::html;",
-  ];
-
-  let hasJson = false;
-
   const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
@@ -186,18 +180,6 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
 
       return `{${parseTemplateLiteral(template)}}` + other;
     })
-    .replace(/{{[^}]+}}/g, (substr) => {
-      hasJson = true;
-
-      const text = substr
-        .slice(2, -2)
-        .trim()
-        .replace(/[^\s]+:/g, (key) => {
-          return `"${key.slice(0, -1)}":`;
-        });
-
-      return `{json!({${text}})}`;
-    })
     .split(/\r?\n/g)
     .map((line, index) => {
       if (index === 0) {
@@ -209,17 +191,15 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
       }
 
       return "    " + line;
-
-      // const trimmed = line.trimStart();
-      // const diff = line.length - trimmed.length;
-      // const indent = (diff * 2) + 4;
-      // const space = "".padEnd(indent, " ");
-
-      // return space + trimmed;
     })
     .join("\n");
 
-  if (hasJson) {
+
+  const fnUses: string[] = [
+    "use html_to_string_macro::html;",
+  ];
+
+  if (fnContent.includes("json!")) {
     fnUses.push("use serde_json::json;");
   }
 

@@ -49,12 +49,12 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   let incremental = 0;
 
   const fnContentPre = fnContent
-    .replace(/{{[^}]+}}/g, (substr) => {
-      const value = "${" + substr.slice(1, -1) + "}";
+    .replace(/json\!\({[^}]+}\)/g, (substr) => {
+      const value = substr;
       const key = `${hash}_${++incremental}`;
       stack.push([key, value]);
 
-      return "{\"" + key + "\"}";
+      return key;
     })
     .replace(/({`[^`]+`})|({[^}]+})/g, (substr) => {
       const value = "${" + substr.slice(1, -1) + "}";
@@ -103,6 +103,10 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   }
 
   fnContentPost = fnContentPost.replace(/(\${`[^`]+`})|(\${"[^"]+"})/g, (substr) => {
+    if (substr.includes("json!")) {
+      return substr;
+    }
+
     return substr.slice(3, -2);
   });
 

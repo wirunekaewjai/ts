@@ -22,8 +22,8 @@ export async function parseJsFunction(fileName: string, input: string, namespace
 
   let fnContentHtml = await parseJsxToHtmlString(fileName, input);
 
-  fnContentHtml = fnContentHtml.replace(/\${{[^}]+}}/g, (substr) => {
-    return "${JSON.stringify(" + substr.slice(2, -1) + ")}";
+  fnContentHtml = fnContentHtml.replace(/json\!/g, () => {
+    return "JSON.stringify";
   });
 
   const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;`;
