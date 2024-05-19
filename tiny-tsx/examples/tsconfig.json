@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+
+    "moduleDetection": "force",
+    "moduleResolution": "Bundler",
+
+    "jsx": "react-jsx",
+    "jsxImportSource": "@wirunekaewjai/ts/tiny-tsx/runtime"
+  },
+  "include": [
+    "node_modules/@wirunekaewjai/ts/tiny-tsx/types.d.ts",
+    "templates/**/*",
+    "outputs/**/*"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "examples",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "build": "bun build.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@wirunekaewjai/ts": "file:../.."
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
