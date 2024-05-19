@@ -17,10 +17,12 @@ export async function parseJsFunction(fileName: string, input: string) {
   const fnInterfaces = generateInterfaces(interfaces.fields);
   const fnName = toLowerSnakeCase(fileName);
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
+  const fnContentRaw = arr[1].trim();
 
   const fnContentHtml = await parseJsxToHtmlString(fileName, input);
-  const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;`;
+  const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;\n\n/*\n${fnContentRaw}\n*/`;
   const fnOutput = `${fnInterfaces}\n${fnExport}`;
+
   return fnOutput.trim();
 }
 

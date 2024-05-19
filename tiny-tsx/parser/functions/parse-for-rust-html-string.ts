@@ -16,6 +16,7 @@ async function parseRsFunction(fileName: string, input: string) {
 
   const fnName = toLowerSnakeCase(fileName);
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
+  const fnContentRaw = arr[1].trim();
 
   let fnContent = await parseJsxToHtmlString(fileName, input);
 
@@ -42,6 +43,9 @@ async function parseRsFunction(fileName: string, input: string) {
     fmtLines.join("\n"),
     `    return format!(r#"${fnContent}"#, ${fmtArgs.join(", ")});`,
     `}`,
+    "",
+    "",
+    `/*\n${fnContentRaw}\n*/`,
   ].join("\n");
 
   const lines: string[] = [
