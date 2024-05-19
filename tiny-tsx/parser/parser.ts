@@ -42,6 +42,7 @@ export class TinyTsxParser {
       const isRust = outType === OutputType.RS_MACRO || outType === OutputType.RS_STRING;
 
       for (const srcFilePath of srcFilePaths) {
+        const now = Date.now();
         const srcPathObj = path.parse(srcFilePath);
 
         const srcParentPath = srcPathObj.dir;
@@ -71,11 +72,10 @@ export class TinyTsxParser {
           });
 
           const output = "// AUTO GENERATED\n" + code;
-
           await writeFile(outPath, output, "utf8");
 
           if (exists) {
-            console.log("*", outPath);
+            console.log(`* ${outPath}`);
           } else {
             console.log(styleText("green", `+ ${outPath}`));
           }
@@ -95,6 +95,7 @@ export class TinyTsxParser {
       }
 
       await cleanup(outDir, startAt);
+
       console.log();
     }
 
