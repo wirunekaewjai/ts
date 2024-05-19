@@ -26,7 +26,7 @@ pub fn counter(count: i32) -> String {
           hx-trigger="click"
           hx-replace-url={format!("/counter?count={}", count + 1)}
           hx-vals={format!("{{&quot;count&quot;:{},&quot;value&quot;:1,&quot;hello&quot;:&quot;world&quot;}}", count)}
-          hx-vals2="{&quot;hello&quot;:&quot;world&quot;}"
+          hx-vals2={"{&quot;hello&quot;:&quot;world&quot;}"}
         >
           {"+"}
         </button>

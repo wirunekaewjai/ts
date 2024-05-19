@@ -1,20 +1,26 @@
 import { TinyTsxParser } from "@wirunekaewjai/ts/tiny-tsx";
-import { styleText } from "node:util";
+import { OutputType } from "../parser/types";
 
-const parser = new TinyTsxParser("templates");
+const parser = new TinyTsxParser(
+  "templates",
+  [
+    {
+      dir: "outputs/ts_jsx",
+      type: OutputType.TS_JSX,
+    },
+    {
+      dir: "outputs/ts_string",
+      type: OutputType.TS_STRING,
+    },
+    {
+      dir: "outputs/rs_macro",
+      type: OutputType.RS_MACRO,
+    },
+    {
+      dir: "outputs/rs_string",
+      type: OutputType.RS_STRING,
+    },
+  ],
+);
 
-console.log(styleText("blue", "===== parse for typescript jsx ====="));
-await parser.parse("typescript_jsx", "outputs/ts");
-console.log();
-
-console.log(styleText("blue", "===== parse for rust html macro ====="));
-await parser.parse("rust_html_macro", "outputs/rs");
-console.log();
-
-// console.log(styleText("blue", "===== parse for typescript html string ====="));
-// await parser.parse("typescript_html_string", "outputs/ts-string", "$");
-// console.log();
-
-// console.log(styleText("blue", "===== parse for rust html string ====="));
-// await parser.parse("rust_html_string", "outputs/rs-string");
-// console.log();
+await parser.parse();
