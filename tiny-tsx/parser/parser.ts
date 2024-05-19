@@ -1,18 +1,29 @@
-import { parseForRust } from "./functions/parse-for-rust";
-import { parseForTypescript } from "./functions/parse-for-typescript";
+import { parseForRustHtmlMacro } from "./functions/parse-for-rust-html-macro";
+import { parseForRustHtmlString } from "./functions/parse-for-rust-html-string";
+import { parseForTypescriptHtmlString } from "./functions/parse-for-typescript-html-string";
+import { parseForTypescriptJsx } from "./functions/parse-for-typescript-jsx";
+import type { OutputType } from "./types";
 
 export class TinyTsxParser {
   public constructor(
     private readonly srcDir: string,
-    private readonly outDir: string,
-    private readonly outExt: ".rs" | ".tsx",
   ) { }
 
-  public async parse() {
-    if (this.outExt === ".rs") {
-      return await parseForRust(this.srcDir, this.outDir);
+  public async parse(outType: OutputType, outDir: string) {
+    if (outType === "typescript_jsx") {
+      return await parseForTypescriptJsx(this.srcDir, outDir);
     }
 
-    return await parseForTypescript(this.srcDir, this.outDir);
+    if (outType === "typescript_html_string") {
+      return await parseForTypescriptHtmlString(this.srcDir, outDir);
+    }
+
+    if (outType === "rust_html_macro") {
+      return await parseForRustHtmlMacro(this.srcDir, outDir);
+    }
+
+    if (outType === "rust_html_string") {
+      return await parseForRustHtmlString(this.srcDir, outDir);
+    }
   }
 }

@@ -4,20 +4,10 @@ import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
 import { glob } from "./glob";
+import { toLowerSnakeCase } from "./to-lower-snake-case";
+import { toPascalCase } from "./to-pascal-case";
 
-function toPascalCase(input: string) {
-  return input
-    .toLowerCase()
-    .split(/[-_]/)
-    .map((x) => x[0].toUpperCase() + x.slice(1))
-    .join("");
-}
-
-function toLowerSnakeCase(input: string) {
-  return input.toLowerCase().replace(/[-]/g, "_");
-}
-
-function parseType(input: string) {
+export function parseType(input: string) {
   switch (input) {
     case "i8":
     case "i16":
@@ -38,7 +28,7 @@ function parseType(input: string) {
   }
 }
 
-function collectInterfaces(fileName: string, input: string) {
+export function collectInterfaces(fileName: string, input: string) {
   const pattern = /interface\s[^{]+{[^}]+}/g;
   const name = toPascalCase(fileName);
 
@@ -88,7 +78,7 @@ function collectInterfaces(fileName: string, input: string) {
   };
 }
 
-function collectArgs(input: string, map: Map<string, string>) {
+export function collectArgs(input: string, map: Map<string, string>) {
   const arr = input.trim().slice(1, -1).split(",").filter((e) => !!e);
   const fields: string[][] = [];
 
@@ -110,7 +100,7 @@ function collectArgs(input: string, map: Map<string, string>) {
   return fields;
 }
 
-function generateInterfaces(interfaces: Map<string, string[][]>) {
+export function generateInterfaces(interfaces: Map<string, string[][]>) {
   const items: string[] = [];
 
   interfaces.forEach((fields, interfaceName) => {
@@ -127,7 +117,7 @@ function generateInterfaces(interfaces: Map<string, string[][]>) {
   return items.join("\n");
 }
 
-function parseComponent(fileName: string, input: string) {
+export function parseJsxFunction(fileName: string, input: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
@@ -144,7 +134,7 @@ function parseComponent(fileName: string, input: string) {
   return fnOutput.trim();
 }
 
-export async function parseForTypescript(srcDir: string, outDir: string) {
+export async function parseForTypescriptJsx(srcDir: string, outDir: string) {
   const startAt = Date.now();
   const srcFilePaths = glob(srcDir, ".tsx");
 
@@ -156,7 +146,7 @@ export async function parseForTypescript(srcDir: string, outDir: string) {
       const srcPathObj = path.parse(srcFilePath);
 
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = parseComponent(srcPathObj.name, data);
+      const code = parseJsxFunction(srcPathObj.name, data);
 
       await mkdir(outParentPath, {
         recursive: true,

@@ -4,20 +4,10 @@ import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
 import { glob } from "./glob";
+import { toLowerSnakeCase } from "./to-lower-snake-case";
+import { toPascalCase } from "./to-pascal-case";
 
-function toPascalCase(input: string) {
-  return input
-    .toLowerCase()
-    .split(/[-_]/)
-    .map((x) => x[0].toUpperCase() + x.slice(1))
-    .join("");
-}
-
-function toLowerSnakeCase(input: string) {
-  return input.toLowerCase().replace(/[-]/g, "_");
-}
-
-function parseTypeForStruct(input: string) {
+export function parseTypeForStruct(input: string) {
   switch (input) {
     case "boolean":
       return "bool";
@@ -40,7 +30,7 @@ function parseTypeForStruct(input: string) {
   }
 }
 
-function parseTypeForInline(input: string) {
+export function parseTypeForInline(input: string) {
   switch (input) {
     case "boolean":
       return "bool";
@@ -63,7 +53,7 @@ function parseTypeForInline(input: string) {
   }
 }
 
-function collectInterfaces(fileName: string, input: string) {
+export function collectInterfaces(fileName: string, input: string) {
   const pattern = /interface\s[^{]+{[^}]+}/g;
   const name = toPascalCase(fileName);
 
@@ -113,7 +103,7 @@ function collectInterfaces(fileName: string, input: string) {
   };
 }
 
-function collectArgs(input: string, map: Map<string, string>) {
+export function collectArgs(input: string, map: Map<string, string>) {
   const arr = input.trim().slice(1, -1).split(",").filter((e) => !!e);
   const fields: string[][] = [];
 
@@ -135,7 +125,7 @@ function collectArgs(input: string, map: Map<string, string>) {
   return fields;
 }
 
-function generateStructs(interfaces: Map<string, string[][]>) {
+export function generateStructs(interfaces: Map<string, string[][]>) {
   const items: string[] = [];
 
   interfaces.forEach((fields, interfaceName) => {
@@ -152,7 +142,7 @@ function generateStructs(interfaces: Map<string, string[][]>) {
   return items.join("\n");
 }
 
-function parseTemplateLiteral(input: string) {
+export function parseTemplateLiteral(input: string) {
   const args: string[] = [];
 
   input = input.replace(/\${[^}]+}/g, (substr) => {
@@ -164,7 +154,7 @@ function parseTemplateLiteral(input: string) {
   return `format!("${input}", ${args.join(", ")})`;
 }
 
-function parseComponent(fileName: string, input: string) {
+function parseRsxFunction(fileName: string, input: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
@@ -225,7 +215,7 @@ function parseComponent(fileName: string, input: string) {
   return lines.join("\n").trim() + "\n";
 }
 
-async function generateModules(parent: string, startAt: number) {
+export async function generateModules(parent: string, startAt: number) {
   const files = await readdir(parent);
 
   const pubs: string[] = [];
@@ -295,7 +285,7 @@ async function generateModules(parent: string, startAt: number) {
   }
 }
 
-export async function parseForRust(srcDir: string, outDir: string) {
+export async function parseForRustHtmlMacro(srcDir: string, outDir: string) {
   const startAt = Date.now();
   const srcFilePaths = glob(srcDir, ".tsx");
 
@@ -310,7 +300,7 @@ export async function parseForRust(srcDir: string, outDir: string) {
 
     try {
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = parseComponent(srcPathObj.name, data);
+      const code = parseRsxFunction(srcPathObj.name, data);
       // const fmt = await $`echo "${code}" | rustfmt`.text();
 
       await mkdir(outParentPath, {
