@@ -50,15 +50,26 @@ export class TinyTsxParser {
         const outPath = path.join(outDir, srcParentPath, srcFileName);
         const outParentPath = path.dirname(outPath);
 
+        const exists = existsSync(outPath);
+
         try {
           const data = srcData[srcFilePath];
           const code = await parse(namespace, srcPathObj.name, outType, data);
+
+          if (!code) {
+            if (exists) {
+              console.log(styleText("yellow", `- ${outPath}`));
+            } else {
+              console.log(styleText("gray", `? ${outPath}`));
+            }
+
+            continue;
+          }
 
           await mkdir(outParentPath, {
             recursive: true,
           });
 
-          const exists = existsSync(outPath);
           const output = "// AUTO GENERATED\n" + code;
 
           await writeFile(outPath, output, "utf8");
@@ -80,7 +91,7 @@ export class TinyTsxParser {
       }
 
       if (outType === OutputType.RS_STRING) {
-        await $`rustfmt ${path.join(outDir, "**/*.rs")}`;
+        await $`rustfmt ${path.join(outDir, "**/*.rs")}`.catch();
       }
 
       await cleanup(outDir, startAt);

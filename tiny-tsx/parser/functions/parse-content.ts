@@ -4,11 +4,49 @@ import { stringifyRustJson } from "./stringify-rust-json";
 import { stringifyRustStringTemplate } from "./stringify-rust-string-template";
 import { stringifyTypescriptJson } from "./stringify-typescript-json";
 
+function wrap(type: OutputType, input: string, args: string[]) {
+  let output = input;
+
+  if (type === OutputType.RS_MACRO) {
+    output = `html!${output}`;
+    output = output.split(/\r?\n/g)
+      .map((line, index) => {
+        if (index === 0) {
+          return line;
+        }
+
+        if (line.trim() === "") {
+          return "";
+        }
+
+        return "    " + line;
+      })
+      .join("\n");
+  }
+
+  else if (type === OutputType.RS_STRING) {
+    if (args.length > 0) {
+      output = `format!(r#"${output}"#, ${args.join(", ")});`;
+    } else {
+      output = `"${output}";`;
+    }
+  }
+
+  else if (type === OutputType.TS_STRING) {
+    output = "`" + output + "`;";
+  }
+
+  return output;
+}
+
 export async function parseContent(type: OutputType, input: string) {
   const original = input.split("=>")[1]?.trim();
 
   if (!original) {
-    return null;
+    return {
+      original: original ?? "",
+      output: wrap(type, "", []),
+    };
   }
 
   const now = Date.now().toString(16);
@@ -31,7 +69,10 @@ export async function parseContent(type: OutputType, input: string) {
 
     if (!output) {
       // failed to parse jsx to html string
-      return null;
+      return {
+        original,
+        output: wrap(type, "", []),
+      };
     }
   }
 
@@ -134,37 +175,8 @@ export async function parseContent(type: OutputType, input: string) {
     }
   }
 
-  if (type === OutputType.RS_MACRO) {
-    output = `html!${output}`;
-    output = output.split(/\r?\n/g)
-      .map((line, index) => {
-        if (index === 0) {
-          return line;
-        }
-
-        if (line.trim() === "") {
-          return "";
-        }
-
-        return "    " + line;
-      })
-      .join("\n");
-  }
-
-  else if (type === OutputType.RS_STRING) {
-    if (outputArgs.length > 0) {
-      output = `format!(r#"${output}"#, ${outputArgs.join(", ")});`;
-    } else {
-      output = `"${output}";`;
-    }
-  }
-
-  else if (type === OutputType.TS_STRING) {
-    output = "`" + output + "`;";
-  }
-
   return {
     original,
-    output,
+    output: wrap(type, output, outputArgs),
   };
 }
