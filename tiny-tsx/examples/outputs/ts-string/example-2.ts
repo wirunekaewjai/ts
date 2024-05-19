@@ -4,7 +4,7 @@ export interface Example2Props {
   width: number;
 }
 
-export const view_example_2 = (props: Example2Props) => `<img alt="this is image" src="${props.src}" width="${props.width}">`;
+export const $example_2 = (props: Example2Props) => `<img alt="this is image" src="${props.src}" width="${props.width}">`;
 
 /*
 (

@@ -12,7 +12,7 @@ await parser.parse("rust_html_macro", "outputs/rs");
 console.log();
 
 console.log(styleText("blue", "===== parse for typescript html string ====="));
-await parser.parse("typescript_html_string", "outputs/ts-string", "view");
+await parser.parse("typescript_html_string", "outputs/ts-string", "$");
 console.log();
 
 console.log(styleText("blue", "===== parse for rust html string ====="));
