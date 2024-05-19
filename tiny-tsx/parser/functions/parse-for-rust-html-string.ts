@@ -38,7 +38,7 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
             return `"${key.slice(0, -1)}":`;
           });
 
-        fmtArgs.push(`json!({${text}}).to_string()`);
+        fmtArgs.push(`json!({${text}})`);
         return "{";
       }
 

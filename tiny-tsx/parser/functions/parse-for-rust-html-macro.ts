@@ -196,7 +196,7 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
           return `"${key.slice(0, -1)}":`;
         });
 
-      return `{json!({${text}}).to_string()}`;
+      return `{json!({${text}})}`;
     })
     .split(/\r?\n/g)
     .map((line, index) => {
