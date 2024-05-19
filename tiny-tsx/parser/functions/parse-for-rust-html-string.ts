@@ -56,9 +56,9 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
 
   const code = lines.join("\n").trim() + "\n";
 
-  if (fmtArgs.length > 0) {
-    return await $`echo "${code}" | rustfmt`.text();
-  }
+  // if (fmtArgs.length > 0) {
+  //   return await $`echo "${code}" | rustfmt`.text();
+  // }
 
   return code;
 }
@@ -103,6 +103,9 @@ export async function parseForRustHtmlString(srcDir: string, outDir: string, nam
   }
 
   await generateModules(outDir, startAt);
+
+  await $`rustfmt ${path.join(outDir, "**/*.rs")}`;
+
   await cleanup(outDir, startAt);
   await cleanupTemp();
 }

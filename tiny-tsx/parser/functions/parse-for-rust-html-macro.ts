@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { existsSync } from "node:fs";
 import { lstat, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -331,5 +332,8 @@ export async function parseForRustHtmlMacro(srcDir: string, outDir: string, name
   }
 
   await generateModules(outDir, startAt);
+
+  await $`rustfmt ${path.join(outDir, "**/*.rs")}`;
+
   await cleanup(outDir, startAt);
 }
