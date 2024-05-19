@@ -171,8 +171,65 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
     .trim()
-    .replace(/json\!\([^)]+\)/g, (substr) => {
-      return substr + `.to_string().replace('"', "&quot;")`;
+    // .replace(/json\!\([^)]+\)/g, (substr) => {
+    //   return substr + `.to_string().replace('"', "&quot;")`;
+    // })
+    .replace(/{{[^}]+}}/g, (substr) => {
+      const pairs: string[] = [];
+      const args: string[] = [];
+
+      const quote = "&quot;";
+      const isVar = (input: string) => {
+        try {
+          JSON.parse(input);
+          return false;
+        } catch {
+          return true;
+        }
+      };
+
+      const getKey = (input: string) => {
+        if (input.startsWith("//")) {
+          return null;
+        }
+
+        if (isVar(input)) {
+          return `${quote}${input}${quote}`;
+        }
+
+        return input.replace(/"/g, quote);
+      };
+
+      substr
+        .slice(2, -2)
+        .trim()
+        .replace(/[^,]+/g, (substr) => {
+          const arr = substr.trim().split(":").map((x) => x.trim());
+          const key = getKey(arr[0]);
+
+          if (!key) {
+            return "";
+          }
+
+          if (isVar(arr[1])) {
+            const value = arr[1] ?? arr[0];
+
+            args.push(value);
+            pairs.push(`${key}:{}`);
+          } else {
+            pairs.push(`${key}:${arr[1].replace(/"/g, "&quot;")}`);
+          }
+
+          return "";
+        });
+
+      const text = `"{` + pairs.join(",") + `}"`;
+
+      if (args.length > 0) {
+        return `{format!(${text}, ${args.join(", ")})}`;
+      }
+
+      return text;
     })
     .replace(/{\`.+/g, (substr) => {
       const lastIndex = substr.lastIndexOf("`}");
@@ -207,9 +264,9 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
     "use html_to_string_macro::html;",
   ];
 
-  if (fnContent.includes("json!")) {
-    fnUses.push("use serde_json::json;");
-  }
+  // if (fnContent.includes("json!")) {
+  //   fnUses.push("use serde_json::json;");
+  // }
 
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [

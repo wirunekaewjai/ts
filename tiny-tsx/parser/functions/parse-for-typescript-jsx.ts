@@ -127,11 +127,11 @@ export function parseJsxFunction(fileName: string, input: string, namespace: str
   const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
-    .trim()
-    .replace(/json\!\([^)]+\)/g, (substr) => {
-      // just remove json!(...) and let jsx runtime handle json stringify on rendering process.
-      return substr.slice(6, -1);
-    });
+    .trim();
+  // .replace(/json\!\([^)]+\)/g, (substr) => {
+  //   // just remove json!(...) and let jsx runtime handle json stringify on rendering process.
+  //   return substr.slice(6, -1);
+  // });
 
   const fnInterfaces = generateInterfaces(interfaces.fields);
   const fnExport = `export const ${fnName} = (${fnArgs}) => ${fnContent}`;

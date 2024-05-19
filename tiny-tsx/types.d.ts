@@ -8,6 +8,4 @@ export declare global {
   export type u16 = number;
   export type u32 = number;
   export type u64 = number;
-
-  export declare function json(value: Record<string, string | number | boolean>): string;
 }

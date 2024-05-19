@@ -12,7 +12,9 @@ pub fn counter(count: i32) -> String {
         <button
           class="w-8 h-8 bg-red-600 text-white rounded-md shadow-md"
           hx-get="/@counter"
-          hx-vals={json!({ "count": count - 1 }).to_string().replace('"', "&quot;")}
+          hx-vals={json!({
+            "count": count - 1,
+          }).to_string().replace('"', "&quot;")}
           hx-trigger="click"
           hx-replace-url={format!("/counter?count={}", count - 1)}
         >
@@ -26,6 +28,8 @@ pub fn counter(count: i32) -> String {
           hx-get={format!("/@counter?count={}", count + 1)}
           hx-trigger="click"
           hx-replace-url={format!("/counter?count={}", count + 1)}
+          hx-vals={format!("{&quot;count&quot;:{},&quot;value&quot;:1,&quot;hello&quot;:&quot;world&quot;}", count)}
+          hx-vals2="{&quot;hello&quot;:&quot;world&quot;}"
         >
           {"+"}
         </button>
