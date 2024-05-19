@@ -190,6 +190,13 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
       }
 
       return "    " + line;
+
+      // const trimmed = line.trimStart();
+      // const diff = line.length - trimmed.length;
+      // const indent = (diff * 2) + 4;
+      // const space = "".padEnd(indent, " ");
+
+      // return space + trimmed;
     })
     .join("\n");
 

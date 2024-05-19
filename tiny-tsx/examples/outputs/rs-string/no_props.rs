@@ -1,7 +1,6 @@
 // AUTO GENERATED
 pub fn no_props() -> String {
-
-    return format!(r#"<div>no props</div>"#, );
+    return "<div>no props</div>".into();
 }
 
 /*

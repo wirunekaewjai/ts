@@ -1,3 +1,4 @@
+mod album_item;
 mod counter;
 mod doc;
 mod example_1;
@@ -6,8 +7,10 @@ mod heading;
 mod navbar;
 mod navbar_item;
 mod no_props;
+mod post_content;
 mod suspense;
 
+pub use album_item::*;
 pub use counter::*;
 pub use doc::*;
 pub use example_1::*;
@@ -16,4 +19,5 @@ pub use heading::*;
 pub use navbar::*;
 pub use navbar_item::*;
 pub use no_props::*;
+pub use post_content::*;
 pub use suspense::*;

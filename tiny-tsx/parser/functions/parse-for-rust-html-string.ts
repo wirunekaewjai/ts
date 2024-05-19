@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -21,27 +22,25 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
 
   let fnContent = await parseJsxToHtmlString(fileName, input);
 
-  const fmtLines: string[] = [];
   const fmtArgs: string[] = [];
 
   fnContent = fnContent.replace(/\${[^}]+}/g, (substr) => {
-    const key = `v_${fmtArgs.length}`;
-
-    fmtLines.push(`    let ${key} = ${substr.slice(2, -1)};`);
-    fmtArgs.push(key);
-
+    fmtArgs.push(substr.slice(2, -1));
     return "{}";
   });
 
-  if (fmtLines.length > 0) {
-    fmtLines.push("");
+  const fnStructs = generateStructs(interfaces.fields).trim();
+  const fnExportContent: string[] = [];
+
+  if (fmtArgs.length > 0) {
+    fnExportContent.push(`    return format!(r#"${fnContent}"#, ${fmtArgs.join(", ")});`);
+  } else {
+    fnExportContent.push(`    return "${fnContent}".into();`);
   }
 
-  const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [
     `pub fn ${fnName}(${fnArgs}) -> String {`,
-    fmtLines.join("\n"),
-    `    return format!(r#"${fnContent}"#, ${fmtArgs.join(", ")});`,
+    fnExportContent.join("\n"),
     `}`,
   ].join("\n");
 
@@ -55,7 +54,13 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
     "*/",
   ];
 
-  return lines.join("\n").trim() + "\n";
+  const code = lines.join("\n").trim() + "\n";
+
+  if (fmtArgs.length > 0) {
+    return await $`echo "${code}" | rustfmt`.text();
+  }
+
+  return code;
 }
 
 export async function parseForRustHtmlString(srcDir: string, outDir: string, namespace: string) {
@@ -76,7 +81,6 @@ export async function parseForRustHtmlString(srcDir: string, outDir: string, nam
     try {
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
       const code = await parseRsFunction(srcPathObj.name, data, namespace);
-      // const fmt = await $`echo "${code}" | rustfmt`.text();
 
       await mkdir(outParentPath, {
         recursive: true,
