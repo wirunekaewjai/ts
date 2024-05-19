@@ -1,5 +1,6 @@
 // AUTO GENERATED
 use html_to_string_macro::html;
+use serde_json::json;
 
 pub fn counter(count: i32) -> String {
     return html!(

@@ -236,9 +236,9 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
     "use html_to_string_macro::html;",
   ];
 
-  // if (fnContent.includes("json!")) {
-  //   fnUses.push("use serde_json::json;");
-  // }
+  if (fnContent.includes("json!")) {
+    fnUses.push("use serde_json::json;");
+  }
 
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [
