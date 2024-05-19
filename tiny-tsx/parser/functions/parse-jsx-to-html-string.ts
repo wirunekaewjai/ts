@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { collectArgs, collectInterfaces, generateInterfaces } from "./parse-for-typescript-jsx";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
+import type { OutputType } from "../types";
 
 const TEMP_DIR = ".tiny-tsx-temp";
 
@@ -32,6 +33,32 @@ export async function cleanupTemp() {
   });
 }
 
+export function parseJsonTemplateLiteral(input: string) {
+  const args: string[] = [];
+  const hash = Bun.hash.wyhash("just-placeholder").toString(16);
+  const keys: string[] = [];
+
+  input = input
+    .replace(/\${[^}]+}/g, (substr) => {
+      const key = `${hash}_${args.length}`;
+
+      substr = substr.slice(2, -1);
+
+      args.push(substr);
+      keys.push(key);
+
+      return key;
+    });
+
+  input = encodeURIComponent(input);
+
+  for (const key of keys) {
+    input = input.replace(key, "{}");
+  }
+
+  return `format!("${input}", ${args.join(", ")})`;
+}
+
 export async function parseJsxToHtmlString(fileName: string, input: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
@@ -41,7 +68,21 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   const fnInterfaces = generateInterfaces(interfaces.fields);
   const fnName = toLowerSnakeCase(fileName);
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
-  const fnContent = arr[1].trim();
+  const fnContent = arr[1]
+    .trim()
+    .replace(/{json\!\([^)]+\)}/g, (substr) => {
+      const text = substr.slice(7, -2);
+
+      if (text.startsWith("`")) {
+        return "{" + parseJsonTemplateLiteral(text.slice(1, -1)) + "}";
+      }
+
+      return "'" + encodeURIComponent(text) + "'";
+
+      // return '"' + encodeURIComponent(substr.slice(6, -1)) + '"';
+      // console.log(substr);
+      // return substr;
+    });
 
   const stack: Array<[string, string]> = [];
   const hash = Bun.hash.wyhash("placeholder").toString(16);
@@ -49,18 +90,18 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   let incremental = 0;
 
   const fnContentPre = fnContent
-    .replace(/json\!\({[^}]+}\)/g, (substr) => {
-      const value = substr;
-      const key = `${hash}_${++incremental}`;
-      stack.push([key, value]);
+    // .replace(/json\!\({[^}]+}\)/g, (substr) => {
+    //   const value = substr;
+    //   const key = `${hash}_${++incremental}`;
+    //   stack.push([key, value]);
 
-      return key;
-    })
+    //   return key;
+    // })
     .replace(/({`[^`]+`})|({[^}]+})/g, (substr) => {
       const value = "${" + substr.slice(1, -1) + "}";
       const key = `${hash}_${++incremental}`;
       stack.push([key, value]);
-
+      console.log(key, value);
       return "{\"" + key + "\"}";
     });
 
@@ -103,9 +144,9 @@ export async function parseJsxToHtmlString(fileName: string, input: string) {
   }
 
   fnContentPost = fnContentPost.replace(/(\${`[^`]+`})|(\${"[^"]+"})/g, (substr) => {
-    if (substr.includes("json!")) {
-      return substr;
-    }
+    // if (substr.includes("json!")) {
+    //   return substr;
+    // }
 
     return substr.slice(3, -2);
   });

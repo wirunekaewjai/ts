@@ -21,6 +21,7 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
   const fnContentRaw = arr[1].trim();
 
   let fnContent = await parseJsxToHtmlString(fileName, input);
+  console.log(fnContent);
 
   const fmtArgs: string[] = [];
   const fnUses: string[] = [];
@@ -46,10 +47,10 @@ async function parseRsFunction(fileName: string, input: string, namespace: strin
     `}`,
   ].join("\n");
 
-  if (fnExport.includes("json!")) {
-    fnUses.push("use serde_json::json;");
-    fnUses.push("");
-  }
+  // if (fnExport.includes("json!")) {
+  //   fnUses.push("use serde_json::json;");
+  //   fnUses.push("");
+  // }
 
   const lines: string[] = [
     ...fnUses,

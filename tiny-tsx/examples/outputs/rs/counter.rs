@@ -1,6 +1,5 @@
 // AUTO GENERATED
 use html_to_string_macro::html;
-use serde_json::json;
 
 pub fn counter(count: i32) -> String {
     return html!(
@@ -12,7 +11,7 @@ pub fn counter(count: i32) -> String {
         <button
           class="w-8 h-8 bg-red-600 text-white rounded-md shadow-md"
           hx-get="/@counter"
-          hx-vals={json!({ "count": count + 1 })}
+          hx-vals={format!("%7B%20%22count%22%3A%20{}%20%7D", count - 1)}
           hx-trigger="click"
           hx-replace-url={format!("/counter?count={}", count - 1)}
         >

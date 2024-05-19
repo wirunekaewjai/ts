@@ -147,11 +147,38 @@ export function generateStructs(interfaces: Map<string, string[][]>) {
 export function parseTemplateLiteral(input: string) {
   const args: string[] = [];
 
-  input = input.replace(/\${[^}]+}/g, (substr) => {
-    substr = substr.slice(2, -1);
-    args.push(substr);
-    return "{}";
-  });
+  input = input
+    .replace(/\${[^}]+}/g, (substr) => {
+      substr = substr.slice(2, -1);
+      args.push(substr);
+      return "{}";
+    });
+
+  return `format!("${input}", ${args.join(", ")})`;
+}
+
+function parseJsonTemplateLiteral(input: string) {
+  const args: string[] = [];
+  const hash = Bun.hash.wyhash("just-placeholder").toString(16);
+  const keys: string[] = [];
+
+  input = input
+    .replace(/\${[^}]+}/g, (substr) => {
+      const key = `${hash}_${args.length}`;
+
+      substr = substr.slice(2, -1);
+
+      args.push(substr);
+      keys.push(key);
+
+      return key;
+    });
+
+  input = encodeURIComponent(input);
+
+  for (const key of keys) {
+    input = input.replace(key, "{}");
+  }
 
   return `format!("${input}", ${args.join(", ")})`;
 }
@@ -166,6 +193,15 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
     .trim()
+    .replace(/{json\!\([^)]+\)}/g, (substr) => {
+      const text = substr.slice(7, -2);
+
+      if (text.startsWith("`")) {
+        return "{" + parseJsonTemplateLiteral(text.slice(1, -1)) + "}";
+      }
+
+      return `"${encodeURIComponent(text)}"`;
+    })
     .replace(/{\`.+/g, (substr) => {
       const lastIndex = substr.lastIndexOf("`}");
 
@@ -199,9 +235,9 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
     "use html_to_string_macro::html;",
   ];
 
-  if (fnContent.includes("json!")) {
-    fnUses.push("use serde_json::json;");
-  }
+  // if (fnContent.includes("json!")) {
+  //   fnUses.push("use serde_json::json;");
+  // }
 
   const fnStructs = generateStructs(interfaces.fields).trim();
   const fnExport = [

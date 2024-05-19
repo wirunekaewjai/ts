@@ -9,5 +9,5 @@ export declare global {
   export type u32 = number;
   export type u64 = number;
 
-  export declare function json(value: any): string;
+  export declare function json(value: string): string;
 }
