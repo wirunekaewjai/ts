@@ -37,11 +37,13 @@ export class TinyTsxParser {
       const outExt = getExtension(outType);
       const namespace = config.namespace ?? "";
 
+      const isRust = outType === OutputType.RS_MACRO || outType === OutputType.RS_STRING;
+
       for (const srcFilePath of srcFilePaths) {
         const srcPathObj = path.parse(srcFilePath);
 
         const srcParentPath = srcPathObj.dir;
-        const srcFileName = toLowerSnakeCase(srcPathObj.name) + outExt;
+        const srcFileName = (isRust ? toLowerSnakeCase(srcPathObj.name) : srcPathObj.name) + outExt;
 
         const outPath = path.join(outDir, srcParentPath, srcFileName);
         const outParentPath = path.dirname(outPath);
@@ -71,7 +73,7 @@ export class TinyTsxParser {
         }
       }
 
-      if (outType === OutputType.RS_MACRO || outType === OutputType.RS_STRING) {
+      if (isRust) {
         await generateRustModules(outDir, startAt);
       }
 
