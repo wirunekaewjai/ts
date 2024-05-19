@@ -158,14 +158,15 @@ export function parseJsxFunction(fileName: string, input: string, namespace: str
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
     .trim()
-    .replace(/{json\!\([^)]+\)}/g, (substr) => {
-      const text = substr.slice(7, -2);
+    .replace(/json\!\([^)]+\)/g, (substr) => {
+      return substr.slice(6, -1);
+      // const text = substr.slice(7, -2);
 
-      if (text.startsWith("`")) {
-        return `{\`${parseJsonTemplateLiteral(text.slice(1, -1))}\`}`;
-      }
+      // if (text.startsWith("`")) {
+      //   return `{\`${parseJsonTemplateLiteral(text.slice(1, -1))}\`}`;
+      // }
 
-      return `"${encodeURIComponent(text)}"`;
+      // return `"${encodeURIComponent(text)}"`;
     });
 
   const fnInterfaces = generateInterfaces(interfaces.fields);

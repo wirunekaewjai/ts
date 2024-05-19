@@ -8,7 +8,7 @@ export const counter = (count: number) => (
     <button
       class="w-8 h-8 bg-red-600 text-white rounded-md shadow-md"
       hx-get="/@counter"
-      hx-vals={`%7B%20%22count%22%3A%20${count - 1}%20%7D`}
+      hx-vals={{ "count": count - 1 }}
       hx-trigger="click"
       hx-replace-url={`/counter?count=${count - 1}`}
     >
