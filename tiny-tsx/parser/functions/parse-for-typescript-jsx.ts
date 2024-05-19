@@ -118,36 +118,6 @@ export function generateInterfaces(interfaces: Map<string, string[][]>) {
   return items.join("\n");
 }
 
-function parseJsonTemplateLiteral(input: string) {
-  // const args: string[] = [];
-  const hash = Bun.hash.wyhash("just-placeholder").toString(16);
-  const keys: string[] = [];
-  const map: Record<string, any> = {};
-
-  input = input
-    .replace(/\${[^}]+}/g, (substr) => {
-      const key = `${hash}_${keys.length}`;
-
-      substr = substr.slice(2, -1);
-
-      // args.push(substr);
-      keys.push(key);
-      map[key] = substr;
-
-      return key;
-    });
-
-  input = encodeURIComponent(input);
-
-  for (const key of keys) {
-    const value = map[key];
-    input = input.replace(key, `\${${value}}`);
-  }
-
-  return input;
-  // return `format!("${input}", ${args.join(", ")})`;
-}
-
 export function parseJsxFunction(fileName: string, input: string, namespace: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
@@ -159,14 +129,8 @@ export function parseJsxFunction(fileName: string, input: string, namespace: str
   const fnContent = arr[1]
     .trim()
     .replace(/json\!\([^)]+\)/g, (substr) => {
+      // just remove json!(...) and let jsx runtime handle json stringify on rendering process.
       return substr.slice(6, -1);
-      // const text = substr.slice(7, -2);
-
-      // if (text.startsWith("`")) {
-      //   return `{\`${parseJsonTemplateLiteral(text.slice(1, -1))}\`}`;
-      // }
-
-      // return `"${encodeURIComponent(text)}"`;
     });
 
   const fnInterfaces = generateInterfaces(interfaces.fields);

@@ -154,33 +154,11 @@ export function parseTemplateLiteral(input: string) {
       return "{}";
     });
 
-  return `format!("${input}", ${args.join(", ")})`;
-}
-
-function parseJsonTemplateLiteral(input: string) {
-  const args: string[] = [];
-  const hash = Bun.hash.wyhash("just-placeholder").toString(16);
-  const keys: string[] = [];
-
-  input = input
-    .replace(/\${[^}]+}/g, (substr) => {
-      const key = `${hash}_${args.length}`;
-
-      substr = substr.slice(2, -1);
-
-      args.push(substr);
-      keys.push(key);
-
-      return key;
-    });
-
-  input = encodeURIComponent(input);
-
-  for (const key of keys) {
-    input = input.replace(key, "{}");
+  if (args.length > 0) {
+    return `format!("${input}", ${args.join(", ")})`;
   }
 
-  return `format!("${input}", ${args.join(", ")})`;
+  return `"${input}"`;
 }
 
 function parseRsxFunction(fileName: string, input: string, namespace: string) {
@@ -195,13 +173,6 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
     .trim()
     .replace(/json\!\([^)]+\)/g, (substr) => {
       return substr + `.to_string().replace('"', "&quot;")`;
-      // const text = substr.slice(7, -2);
-
-      // if (text.startsWith("`")) {
-      //   return "{" + parseJsonTemplateLiteral(text.slice(1, -1)) + "}";
-      // }
-
-      // return `"${encodeURIComponent(text)}"`;
     })
     .replace(/{\`.+/g, (substr) => {
       const lastIndex = substr.lastIndexOf("`}");
