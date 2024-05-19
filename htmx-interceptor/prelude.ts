@@ -1,9 +1,9 @@
 import type HTMX from "htmx.org";
-import { HxInterceptor } from "./hx-interceptor";
+import { HtmxInterceptor } from "./htmx-interceptor";
 
 declare global {
   var htmx: typeof HTMX;
-  var interceptor: HxInterceptor;
+  var interceptor: HtmxInterceptor;
 }
 
-window.interceptor = new HxInterceptor();
+window.interceptor = new HtmxInterceptor();

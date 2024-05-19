@@ -1,9 +1,11 @@
 # node
 - sequential-watch
+- tiny-router
 - tiny-tsx
 
 # browser
 - htmx-interceptor
+- tiny-router
 - tiny-tsx (jsx runtime)
 
 # usage

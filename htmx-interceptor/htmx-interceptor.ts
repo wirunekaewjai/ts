@@ -1,27 +1,30 @@
-import type { HxRequestHandler } from "./types";
+import { TinyRouter, type TinyRouteHandler, type TinyRouteInvoker } from "../tiny-router";
 
-export class HxInterceptor {
-  private map: Map<string, Map<string, HxRequestHandler>> = new Map();
+export class HtmxInterceptor {
+  private router: TinyRouter;
 
   public constructor() {
-    this.map.set("GET", new Map());
+    this.router = new TinyRouter();
     this.intercept();
   }
 
-  public get(path: string, handler: HxRequestHandler) {
-    this.map.get("GET")?.set(path, handler);
+  public add(path: string, handler: TinyRouteHandler) {
+    this.router.add(path, handler);
+  }
+
+  public remove(path: string) {
+    this.router.remove(path);
   }
 
   private intercept() {
-    const map = this.map;
+    const router = this.router;
     const OriginalXMLHttpRequest = window.XMLHttpRequest;
 
     class InterceptedXMLHttpRequest extends OriginalXMLHttpRequest {
       private headers: Record<string, string> = {};
 
       private url: string | null = null;
-      private query: Record<string, string> | null = null;
-      private handler: HxRequestHandler | null = null;
+      private invoker: TinyRouteInvoker | null = null;
 
       setRequestHeader(name: string, value: string): void {
         this.headers[name] = value;
@@ -34,23 +37,15 @@ export class HxInterceptor {
         const method = args[0];
         const url = args[1];
 
-        if (typeof url === "string") {
+        if (method === "GET" && typeof url === "string") {
           // start intercept
-          const { pathname, searchParams } = new URL(url, window.location.origin);
-          const handler = map.get(method)?.get(pathname);
+          const invoker = router.match(url);
 
-          if (handler) {
-            const query: Record<string, string> = {};
-
-            searchParams.forEach((value, key) => {
-              query[key] = value;
-            });
-
+          if (invoker) {
             this.url = url;
-            this.query = query;
-            this.handler = handler;
+            this.invoker = invoker;
 
-            console.debug(method, url);
+            console.debug("intercept:", url);
           }
         }
 
@@ -60,19 +55,16 @@ export class HxInterceptor {
       send(body?: Document | XMLHttpRequestBodyInit | null) {
         const isHxRequest = this.headers["HX-Request"];
 
-        if (!isHxRequest || !this.url || !this.query || !this.handler) {
+        if (!isHxRequest || !this.url || !this.invoker) {
           // default behavior
           super.send(body);
           return;
         }
 
         const url = this.url;
-        const handler = this.handler({
-          // TODO: add request body for POST
-          query: this.query,
-        });
 
-        const onSuccess = (html: string) => {
+        // TODO: handle error
+        this.invoker().then((response: any) => {
           [
             "response",
             "responseText",
@@ -82,21 +74,14 @@ export class HxInterceptor {
             "statusText",
           ].forEach((name) => Object.defineProperty(this, name, { writable: true }));
 
-          (this.response as string) = (this.responseText as string) = html ?? "";
+          (this.response as string) = (this.responseText as string) = response ?? "";
           (this.responseURL as string) = new URL(url, window.location.origin).href;
           (this.readyState as number) = XMLHttpRequest.DONE;
           (this.status as number) = 200;
           (this.statusText as string) = "OK";
 
           this.onload?.(new ProgressEvent(""));
-        };
-
-        if (handler instanceof Promise) {
-          // TODO: handle error
-          handler.then(onSuccess);
-        } else {
-          onSuccess(handler);
-        }
+        });
       }
     };
 

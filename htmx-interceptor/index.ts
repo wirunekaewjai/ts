@@ -1,2 +1,1 @@
-export * from "./hx-interceptor";
-export * from "./types";
+export * from "./htmx-interceptor";
