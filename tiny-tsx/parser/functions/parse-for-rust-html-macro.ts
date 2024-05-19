@@ -3,6 +3,7 @@ import { lstat, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
+import { formatFunctionName } from "./format-function-name";
 import { glob } from "./glob";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
 import { toPascalCase } from "./to-pascal-case";
@@ -154,13 +155,13 @@ export function parseTemplateLiteral(input: string) {
   return `format!("${input}", ${args.join(", ")})`;
 }
 
-function parseRsxFunction(fileName: string, input: string) {
+function parseRsxFunction(fileName: string, input: string, namespace: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
-  const fnName = toLowerSnakeCase(fileName);
+  const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1]
     .trim()
@@ -285,7 +286,7 @@ export async function generateModules(parent: string, startAt: number) {
   }
 }
 
-export async function parseForRustHtmlMacro(srcDir: string, outDir: string) {
+export async function parseForRustHtmlMacro(srcDir: string, outDir: string, namespace: string) {
   const startAt = Date.now();
   const srcFilePaths = glob(srcDir, ".tsx");
 
@@ -300,7 +301,7 @@ export async function parseForRustHtmlMacro(srcDir: string, outDir: string) {
 
     try {
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = parseRsxFunction(srcPathObj.name, data);
+      const code = parseRsxFunction(srcPathObj.name, data, namespace);
       // const fmt = await $`echo "${code}" | rustfmt`.text();
 
       await mkdir(outParentPath, {

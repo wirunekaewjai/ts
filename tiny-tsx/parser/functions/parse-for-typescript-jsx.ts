@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
+import { formatFunctionName } from "./format-function-name";
 import { glob } from "./glob";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
 import { toPascalCase } from "./to-pascal-case";
@@ -117,13 +118,13 @@ export function generateInterfaces(interfaces: Map<string, string[][]>) {
   return items.join("\n");
 }
 
-export function parseJsxFunction(fileName: string, input: string) {
+export function parseJsxFunction(fileName: string, input: string, namespace: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
-  const fnName = toLowerSnakeCase(fileName);
+  const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContent = arr[1].trim();
 
@@ -134,19 +135,22 @@ export function parseJsxFunction(fileName: string, input: string) {
   return fnOutput.trim();
 }
 
-export async function parseForTypescriptJsx(srcDir: string, outDir: string) {
+export async function parseForTypescriptJsx(srcDir: string, outDir: string, namespace: string) {
   const startAt = Date.now();
   const srcFilePaths = glob(srcDir, ".tsx");
 
   for (const srcFilePath of srcFilePaths) {
-    const outPath = path.join(outDir, srcFilePath);
+    const srcPathObj = path.parse(srcFilePath);
+
+    const srcParentPath = srcPathObj.dir;
+    const srcFileName = srcPathObj.name + ".tsx";
+
+    const outPath = path.join(outDir, srcParentPath, srcFileName);
     const outParentPath = path.dirname(outPath);
 
     try {
-      const srcPathObj = path.parse(srcFilePath);
-
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = parseJsxFunction(srcPathObj.name, data);
+      const code = parseJsxFunction(srcPathObj.name, data, namespace);
 
       await mkdir(outParentPath, {
         recursive: true,

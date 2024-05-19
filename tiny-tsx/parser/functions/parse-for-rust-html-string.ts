@@ -1,20 +1,21 @@
 import { existsSync } from "node:fs";
-import { lstat, mkdir, readdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
+import { formatFunctionName } from "./format-function-name";
 import { glob } from "./glob";
-import { toLowerSnakeCase } from "./to-lower-snake-case";
 import { collectArgs, collectInterfaces, generateModules, generateStructs, parseTemplateLiteral } from "./parse-for-rust-html-macro";
 import { cleanupTemp, parseJsxToHtmlString, prepareTemp } from "./parse-jsx-to-html-string";
+import { toLowerSnakeCase } from "./to-lower-snake-case";
 
-async function parseRsFunction(fileName: string, input: string) {
+async function parseRsFunction(fileName: string, input: string, namespace: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
-  const fnName = toLowerSnakeCase(fileName);
+  const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContentRaw = arr[1].trim();
 
@@ -57,7 +58,7 @@ async function parseRsFunction(fileName: string, input: string) {
   return lines.join("\n").trim() + "\n";
 }
 
-export async function parseForRustHtmlString(srcDir: string, outDir: string) {
+export async function parseForRustHtmlString(srcDir: string, outDir: string, namespace: string) {
   await prepareTemp();
 
   const startAt = Date.now();
@@ -74,7 +75,7 @@ export async function parseForRustHtmlString(srcDir: string, outDir: string) {
 
     try {
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = await parseRsFunction(srcPathObj.name, data);
+      const code = await parseRsFunction(srcPathObj.name, data, namespace);
       // const fmt = await $`echo "${code}" | rustfmt`.text();
 
       await mkdir(outParentPath, {

@@ -3,30 +3,31 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./cleanup";
+import { formatFunctionName } from "./format-function-name";
 import { glob } from "./glob";
 import { collectArgs, collectInterfaces, generateInterfaces } from "./parse-for-typescript-jsx";
 import { cleanupTemp, parseJsxToHtmlString, prepareTemp } from "./parse-jsx-to-html-string";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
 
-export async function parseJsFunction(fileName: string, input: string) {
+export async function parseJsFunction(fileName: string, input: string, namespace: string) {
   const { interfaces, output } = collectInterfaces(fileName, input);
 
   const arr = output.split("=>");
   const args = collectArgs(arr[0], interfaces.map);
 
   const fnInterfaces = generateInterfaces(interfaces.fields);
-  const fnName = toLowerSnakeCase(fileName);
+  const fnName = toLowerSnakeCase(formatFunctionName(namespace, fileName));
   const fnArgs = args.map((arg) => `${arg[0]}: ${arg[1]}`).join(", ");
   const fnContentRaw = arr[1].trim();
 
   const fnContentHtml = await parseJsxToHtmlString(fileName, input);
   const fnExport = `export const ${fnName} = (${fnArgs}) => \`${fnContentHtml}\`;`;
-  const fnOutput = `${fnInterfaces}\n${fnExport}\n/*\n${fnContentRaw}\n*/`;
+  const fnOutput = `${fnInterfaces}\n${fnExport}\n\n/*\n${fnContentRaw}\n*/`;
 
   return fnOutput.trim();
 }
 
-export async function parseForTypescriptHtmlString(srcDir: string, outDir: string) {
+export async function parseForTypescriptHtmlString(srcDir: string, outDir: string, namespace: string) {
   await prepareTemp();
 
   const startAt = Date.now();
@@ -43,7 +44,7 @@ export async function parseForTypescriptHtmlString(srcDir: string, outDir: strin
 
     try {
       const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      const code = await parseJsFunction(srcPathObj.name, data);
+      const code = await parseJsFunction(srcPathObj.name, data, namespace);
 
       await mkdir(outParentPath, {
         recursive: true,

@@ -9,21 +9,21 @@ export class TinyTsxParser {
     private readonly srcDir: string,
   ) { }
 
-  public async parse(outType: OutputType, outDir: string) {
+  public async parse(outType: OutputType, outDir: string, namespace = "") {
     if (outType === "typescript_jsx") {
-      return await parseForTypescriptJsx(this.srcDir, outDir);
+      return await parseForTypescriptJsx(this.srcDir, outDir, namespace);
     }
 
     if (outType === "typescript_html_string") {
-      return await parseForTypescriptHtmlString(this.srcDir, outDir);
+      return await parseForTypescriptHtmlString(this.srcDir, outDir, namespace);
     }
 
     if (outType === "rust_html_macro") {
-      return await parseForRustHtmlMacro(this.srcDir, outDir);
+      return await parseForRustHtmlMacro(this.srcDir, outDir, namespace);
     }
 
     if (outType === "rust_html_string") {
-      return await parseForRustHtmlString(this.srcDir, outDir);
+      return await parseForRustHtmlString(this.srcDir, outDir, namespace);
     }
   }
 }
