@@ -34,7 +34,7 @@ export async function parseForTypescriptHtmlString(srcDir: string, outDir: strin
     const srcPathObj = path.parse(srcFilePath);
 
     const srcParentPath = srcPathObj.dir;
-    const srcFileName = toLowerSnakeCase(srcPathObj.name) + ".ts";
+    const srcFileName = srcPathObj.name + ".ts";
 
     const outPath = path.join(outDir, srcParentPath, srcFileName);
     const outParentPath = path.dirname(outPath);
