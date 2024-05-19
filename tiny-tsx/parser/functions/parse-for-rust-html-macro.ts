@@ -226,7 +226,7 @@ function parseRsxFunction(fileName: string, input: string, namespace: string) {
       const text = `"{` + pairs.join(",") + `}"`;
 
       if (args.length > 0) {
-        return `{format!(${text}, ${args.join(", ")})}`;
+        return `{format!(r#${text}#, ${args.join(", ")})}`;
       }
 
       return text;
