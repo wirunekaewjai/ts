@@ -45,8 +45,7 @@ function getTypescriptType(input: string) {
   }
 }
 
-export function collectFunctionInterfaces(name: string, type: OutputType, input: string) {
-  const pattern = /interface\s[^{]+{[^}]+}/g;
+export function collectFunctionInterfaces(name: string, type: OutputType, items: string[]) {
   const prefix = toPascalCase(name);
 
   // console.log("#", fileName, "->", name);
@@ -54,10 +53,8 @@ export function collectFunctionInterfaces(name: string, type: OutputType, input:
   const interfaceMap: Map<string, string> = new Map();
   const interfaceFields: Map<string, string[][]> = new Map();
 
-  const output = input.replace(pattern, (substr) => {
-    substr = substr.replace(/\s+/g, " ");
-
-    const arr = substr.split(" ");
+  for (const item of items) {
+    const arr = item.replace(/\s+/g, " ").split(" ");
     const interfaceName = prefix + arr[1];
 
     interfaceMap.set(arr[1], interfaceName);
@@ -89,12 +86,10 @@ export function collectFunctionInterfaces(name: string, type: OutputType, input:
     }
 
     interfaceFields.set(interfaceName, fields);
-    return "";
-  });
+  }
 
   return {
     fields: interfaceFields,
     map: interfaceMap,
-    output,
   };
 }

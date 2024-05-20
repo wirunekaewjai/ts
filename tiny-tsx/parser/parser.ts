@@ -1,6 +1,6 @@
 import { $ } from "bun";
 import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./functions/cleanup";
@@ -59,6 +59,11 @@ export class TinyTsxParser {
 
           if (!code) {
             if (exists) {
+              await rm(outPath, {
+                force: true,
+                recursive: true,
+              });
+
               console.log(styleText("yellow", `- ${outPath}`));
             } else {
               console.log(styleText("gray", `? ${outPath}`));

@@ -5,28 +5,25 @@ import { formatFunctionName } from "./format-function-name";
 import { generatePropsTypes } from "./generate-props-types";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
 
-export function parseTemplate(
+export function buildFunction(
   namespace: string,
   name: string,
   type: OutputType,
-  input: string,
-  content: string,
-  footer: string,
+  template: {
+    interfaces: string[];
+    args: string[];
+    content: string;
+    footer: string;
+  },
 ) {
-  const header = input.split("=>")[0]?.trim();
-
-  if (!header) {
-    return null;
-  }
-
-  const fnInterfaces = collectFunctionInterfaces(name, type, header);
+  const fnInterfaces = collectFunctionInterfaces(name, type, template.interfaces);
   const fnName = toLowerSnakeCase(formatFunctionName(namespace, name));
-  const fnArgs = collectFunctionArgs(type, fnInterfaces.output, fnInterfaces.map);
+  const fnArgs = collectFunctionArgs(type, template.args, fnInterfaces.map);
   const fnPropsTypes = generatePropsTypes(type, fnInterfaces.fields);
 
   const fnLines: string[] = [];
 
-  if (type === OutputType.RS_MACRO) {
+  if (type === OutputType.RS_MACRO && template.content.includes("html!")) {
     fnLines.push("use html_to_string_macro::html;");
     fnLines.push("");
   }
@@ -39,20 +36,20 @@ export function parseTemplate(
   if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
     fnLines.push(
       `pub fn ${fnName}(${fnArgs}) -> String {`,
-      `    return ${content}`,
+      `    return ${template.content}`,
       `}`,
     );
   }
 
   else {
     fnLines.push(
-      `export const ${fnName} = (${fnArgs}) => ${content}`,
+      `export const ${fnName} = (${fnArgs}) => ${template.content}`,
     );
   }
 
-  if (footer) {
+  if (template.footer) {
     fnLines.push("");
-    fnLines.push(footer);
+    fnLines.push(template.footer);
   }
 
   return fnLines.join("\n").trim() + "\n";

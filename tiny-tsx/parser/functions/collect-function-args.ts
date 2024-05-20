@@ -44,12 +44,11 @@ function getTypescriptType(input: string) {
   }
 }
 
-export function collectFunctionArgs(type: OutputType, input: string, map: Map<string, string>) {
-  const arr = input.trim().slice(1, -1).split(",").filter((e) => !!e);
+export function collectFunctionArgs(type: OutputType, items: string[], map: Map<string, string>) {
   const fields: string[][] = [];
 
-  for (const text of arr) {
-    const parts = text.split(":");
+  for (const item of items) {
+    const parts = item.split(":");
     const argName = parts[0].trim();
 
     let argType = parts[1].trim();

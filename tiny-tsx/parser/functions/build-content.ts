@@ -8,7 +8,6 @@ function wrap(type: OutputType, input: string, args: string[]) {
   let output = input;
 
   if (type === OutputType.RS_MACRO) {
-    output = `html!${output}`;
     output = output.split(/\r?\n/g)
       .map((line, index) => {
         if (index === 0) {
@@ -22,6 +21,12 @@ function wrap(type: OutputType, input: string, args: string[]) {
         return "    " + line;
       })
       .join("\n");
+
+    if (output.trim().length === 0) {
+      output = `"";`;
+    } else {
+      output = `html!${output}`;
+    }
   }
 
   else if (type === OutputType.RS_STRING) {
@@ -36,24 +41,21 @@ function wrap(type: OutputType, input: string, args: string[]) {
     output = "`" + output + "`;";
   }
 
+  else if (type === OutputType.TS_JSX) {
+    if (output.trim().length === 0) {
+      return `"";`;
+    }
+  }
+
   return output;
 }
 
-export async function parseContent(type: OutputType, input: string) {
-  const original = input.split("=>")[1]?.trim();
-
-  if (!original) {
-    return {
-      original: original ?? "",
-      output: wrap(type, "", []),
-    };
-  }
-
+export async function buildContent(type: OutputType, input: string) {
   const now = Date.now().toString(16);
   const hash = Bun.hash.wyhash(now).toString(16);
   const expressions: Map<string, string> = new Map();
 
-  let output = original
+  let output = input
     // json | string template | double quote | single quote | variable
     .replace(/({{[^}]+}})|({`[^`]+`})|({"[^"]+"})|({'[^']+'})|({[^}]+})/g, (substr) => {
       const key = `${hash}_${expressions.size}`;
@@ -69,10 +71,7 @@ export async function parseContent(type: OutputType, input: string) {
 
     if (!output) {
       // failed to parse jsx to html string
-      return {
-        original,
-        output: wrap(type, "", []),
-      };
+      return wrap(type, "", []);
     }
   }
 
@@ -175,8 +174,5 @@ export async function parseContent(type: OutputType, input: string) {
     }
   }
 
-  return {
-    original,
-    output: wrap(type, output, outputArgs),
-  };
+  return wrap(type, output, outputArgs);
 }

@@ -1,6 +1,7 @@
 import { OutputType } from "../types";
-import { parseContent } from "./parse-content";
-import { parseTemplate } from "./parse-template";
+import { buildContent } from "./build-content";
+import { buildFunction } from "./build-function";
+import { extractTemplate } from "./extract-template";
 
 export async function parse(
   namespace: string,
@@ -8,11 +9,22 @@ export async function parse(
   type: OutputType,
   input: string,
 ) {
+  const template = extractTemplate(input);
+
+  if (!template.content) {
+    // invalid file
+    return null;
+  }
+
   const isString = type === OutputType.RS_STRING || type === OutputType.TS_STRING;
 
-  const content = await parseContent(type, input);
-  const footer = isString ? `/*\n${content.original}\n*/` : "";
-  const template = parseTemplate(namespace, name, type, input, content.output, footer);
+  const content = await buildContent(type, template.content);
+  const footer = isString ? `/*\n${template.content}\n*/` : "";
 
-  return template;
+  return buildFunction(namespace, name, type, {
+    interfaces: template.interfaces,
+    args: template.args,
+    content,
+    footer,
+  });
 }
