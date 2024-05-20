@@ -23,7 +23,7 @@ function wrap(type: OutputType, input: string, args: string[]) {
       .join("\n");
 
     if (output.trim().length === 0) {
-      output = `"";`;
+      output = `"".into();`;
     } else {
       output = `html!${output}`;
     }
@@ -33,7 +33,7 @@ function wrap(type: OutputType, input: string, args: string[]) {
     if (args.length > 0) {
       output = `format!(r#"${output}"#, ${args.join(", ")});`;
     } else {
-      output = `"${output}";`;
+      output = `"${output}".into();`;
     }
   }
 
