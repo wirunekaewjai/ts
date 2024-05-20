@@ -57,7 +57,7 @@ export async function buildContent(type: OutputType, input: string) {
 
   let output = input
     // json | string template | double quote | single quote | variable
-    .replace(/({{[^}]+}})|({`[^`]+`})|({"[^"]+"})|({'[^']+'})|({[^}]+})/g, (substr) => {
+    .replace(/({{[^]+}})|({`[^`]+`})|({"[^"]+"})|({'[^']+'})|({[^}]+})/g, (substr) => {
       const key = `${hash}_${expressions.size}`;
       const value = substr;
 

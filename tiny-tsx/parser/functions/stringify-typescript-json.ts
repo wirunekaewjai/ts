@@ -1,48 +1,41 @@
-const QUOTE = "&quot;";
-
-function isVar(input: string) {
-  try {
-    JSON.parse(input);
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-function getKey(input: string) {
-  if (input.startsWith("//")) {
-    return null;
-  }
-
-  if (isVar(input)) {
-    return `${QUOTE}${input}${QUOTE}`;
-  }
-
-  return input.replace(/"/g, QUOTE);
-}
+import { serializeJsonObject } from "./serialize-json";
 
 export function stringifyTypescriptJson(input: string) {
-  const pairs: string[] = [];
+  return serializeJsonObject(input, 0).output.replace(/"/g, "&quot;");
 
-  input
-    .trim()
-    .replace(/[^,]+/g, (substr) => {
-      const arr = substr.trim().split(":").map((x) => x.trim());
-      const key = getKey(arr[0]);
+  // const pairs: string[] = [];
 
-      if (!key) {
-        return "";
-      }
+  // console.log("---");
+  // console.log(input);
+  // console.log("---");
+  // input.replace(/\[[^\]]+\]/g, (substr) => {
+  //   substr.slice(1, -1).trim().replace(/[^,]+/g, (substr2) => {
+  //     console.log(substr2.trim());
+  //     return "";
+  //   });
 
-      if (isVar(arr[1])) {
-        const value = arr[1] ?? arr[0];
-        pairs.push(`${key}:\${${value}}`);
-      } else {
-        pairs.push(`${key}:${arr[1].replace(/"/g, "&quot;")}`);
-      }
+  //   return "";
+  // });
 
-      return "";
-    });
+  // input
+  //   .trim()
+  //   .replace(/[^,]+/g, (substr) => {
+  //     const arr = substr.trim().split(":").map((x) => x.trim());
+  //     const key = getKey(arr[0]);
 
-  return `{${pairs.join(",")}}`;
+  //     if (!key) {
+  //       return "";
+  //     }
+
+  //     if (isVar(arr[1])) {
+  //       const value = arr[1] ?? arr[0];
+  //       pairs.push(`${key}:\${${value}}`);
+  //     } else {
+  //       pairs.push(`${key}:${arr[1].replace(/"/g, "&quot;")}`);
+  //     }
+
+  //     return "";
+  //   });
+
+  // return `{${pairs.join(",")}}`;
 }
