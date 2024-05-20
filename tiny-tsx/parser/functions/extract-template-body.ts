@@ -1,5 +1,5 @@
 export function extractTemplateBody(input: string) {
-  const m = input.match(/\([^)]*\)\s*=>\s*\([^;]+;/);
+  const m = input.match(/\([^)]*\)\s*=>\s*\(\s*\<[^;]+\>\s*\);/);
 
   if (m) {
     const arr = m[0].split("=>").map((x) => x.trim());
