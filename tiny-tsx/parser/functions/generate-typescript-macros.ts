@@ -5,11 +5,11 @@ import { styleText } from "node:util";
 import { getEscapeQuot } from "../macros/escape-quot";
 import { OutputType } from "../types";
 
-export async function generateRustMacros(parent: string) {
+export async function generateTypescriptMacros(parent: string) {
   const outDir = "tiny_tsx";
-  const outPath = path.join(parent, outDir, "macros.rs");
+  const outPath = path.join(parent, outDir, "macros.ts");
   const output = [
-    getEscapeQuot(OutputType.RS_MACRO),
+    getEscapeQuot(OutputType.TS_JSX),
   ];
 
   await mkdir(path.join(parent, outDir), {

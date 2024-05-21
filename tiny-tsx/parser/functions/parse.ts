@@ -4,6 +4,8 @@ import { buildFunction } from "./build-function";
 import { extractTemplate } from "./extract-template";
 
 export async function parse(
+  outDir: string,
+  outPath: string,
   namespace: string,
   name: string,
   type: OutputType,
@@ -21,7 +23,7 @@ export async function parse(
   const content = await buildContent(type, template.content);
   const footer = isString ? `/*\n${template.content}\n*/` : "";
 
-  return buildFunction(namespace, name, type, {
+  return buildFunction(outDir, outPath, namespace, name, type, {
     interfaces: template.interfaces,
     args: template.args,
     content,

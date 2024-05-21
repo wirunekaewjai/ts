@@ -1,3 +1,4 @@
+import path from "node:path";
 import { OutputType } from "../types";
 import { collectFunctionArgs } from "./collect-function-args";
 import { collectFunctionInterfaces } from "./collect-function-interfaces";
@@ -6,6 +7,8 @@ import { generatePropsTypes } from "./generate-props-types";
 import { toLowerSnakeCase } from "./to-lower-snake-case";
 
 export function buildFunction(
+  outDir: string,
+  outPath: string,
   namespace: string,
   name: string,
   type: OutputType,
@@ -30,8 +33,16 @@ export function buildFunction(
     fnImports.push("use html_to_string_macro::html;");
   }
 
-  if ((type === OutputType.RS_MACRO || type === OutputType.RS_STRING) && template.content.includes("format_json!")) {
-    fnImports.push("use crate::format_json;");
+  if ((type === OutputType.RS_MACRO || type === OutputType.RS_STRING) && template.content.includes("escape_quot!")) {
+    fnImports.push("use crate::escape_quot;");
+  }
+
+  if ((type === OutputType.TS_JSX || type === OutputType.TS_STRING) && template.content.includes("escape_quot(")) {
+    const outParentPath = path.dirname(outPath);
+    const macroPath = path.join(outDir, "tiny_tsx/macros");
+    const relativePath = path.relative(outParentPath, macroPath);
+
+    fnImports.push(`import { escape_quot } from "./${relativePath}";`);
   }
 
   // Interfaces / Struct

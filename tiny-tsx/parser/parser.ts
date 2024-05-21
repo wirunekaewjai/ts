@@ -4,7 +4,9 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
 import { cleanup } from "./functions/cleanup";
+import { generateRustMacros } from "./functions/generate-rust-macros";
 import { generateRustModules } from "./functions/generate-rust-modules";
+import { generateTypescriptMacros } from "./functions/generate-typescript-macros";
 import { getExtension } from "./functions/get-extension";
 import { glob } from "./functions/glob";
 import { cleanupTemp, prepareTemp } from "./functions/jsx-to-string";
@@ -12,7 +14,6 @@ import { parse } from "./functions/parse";
 import { stripComment } from "./functions/strip-comment";
 import { toLowerSnakeCase } from "./functions/to-lower-snake-case";
 import { OutputType, type Config } from "./types";
-import { generateRustMacros } from "./functions/generate-rust-macros";
 
 export class TinyTsxParser {
   public constructor(
@@ -41,9 +42,9 @@ export class TinyTsxParser {
       const namespace = config.namespace ?? "";
 
       const isRust = outType === OutputType.RS_MACRO || outType === OutputType.RS_STRING;
+      const isTs = !isRust;
 
       for (const srcFilePath of srcFilePaths) {
-        const now = Date.now();
         const srcPathObj = path.parse(srcFilePath);
 
         const srcParentPath = srcPathObj.dir;
@@ -56,7 +57,7 @@ export class TinyTsxParser {
 
         try {
           const data = srcData[srcFilePath];
-          const code = await parse(namespace, srcPathObj.name, outType, data);
+          const code = await parse(outDir, outPath, namespace, srcPathObj.name, outType, data);
 
           if (!code) {
             if (exists) {
@@ -90,6 +91,10 @@ export class TinyTsxParser {
           console.log(err);
           console.log();
         }
+      }
+
+      if (isTs) {
+        await generateTypescriptMacros(outDir);
       }
 
       if (isRust) {
