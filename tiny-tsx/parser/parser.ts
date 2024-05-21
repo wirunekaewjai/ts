@@ -12,7 +12,7 @@ import { parse } from "./functions/parse";
 import { stripComment } from "./functions/strip-comment";
 import { toLowerSnakeCase } from "./functions/to-lower-snake-case";
 import { OutputType, type Config } from "./types";
-import { generateRustHelpers } from "./functions/generate-rust-helpers";
+import { generateRustMacros } from "./functions/generate-rust-macros";
 
 export class TinyTsxParser {
   public constructor(
@@ -93,7 +93,7 @@ export class TinyTsxParser {
       }
 
       if (isRust) {
-        await generateRustHelpers(outDir);
+        await generateRustMacros(outDir);
         await generateRustModules(outDir, startAt);
       }
 

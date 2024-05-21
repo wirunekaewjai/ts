@@ -57,7 +57,7 @@ export async function buildContent(type: OutputType, input: string) {
 
   let output = input
     // json | string template | double quote | single quote | variable
-    .replace(/({{[^]+}})|({`[^`]+`})|({"[^"]+"})|({'[^']+'})|({[^}]+})/g, (substr) => {
+    .replace(/(\{\{([\s\S]*?)\}\})|(\{\[([\s\S]*?)\]\})|(\{`[^`]+`\})|(\{"[^"]+"\})|(\{'[^']+'\})|(\{[^}]+\})/g, (substr) => {
       const key = `${hash}_${expressions.size}`;
       const value = substr;
 
@@ -101,7 +101,12 @@ export async function buildContent(type: OutputType, input: string) {
 
       else if (expression.startsWith("{{")) {
         // json
-        output = output.replace(key, stringifyTypescriptJson(expression.slice(2, -2)));
+        output = output.replace(key, stringifyTypescriptJson(expression.slice(2, -2), false));
+      }
+
+      else if (expression.startsWith("{[")) {
+        // json
+        output = output.replace(key, stringifyTypescriptJson(expression.slice(2, -2), true));
       }
 
       else {
@@ -130,7 +135,12 @@ export async function buildContent(type: OutputType, input: string) {
 
       else if (expression.startsWith("{{")) {
         // json
-        output = output.replace(`{"${key}"}`, `{${stringifyRustJson(expression.slice(2, -2))}}`);
+        output = output.replace(`{"${key}"}`, `{${stringifyRustJson(expression.slice(2, -2), false)}}`);
+      }
+
+      else if (expression.startsWith("{[")) {
+        // json
+        output = output.replace(`{"${key}"}`, `{${stringifyRustJson(expression.slice(2, -2), true)}}`);
       }
 
       else {
@@ -161,7 +171,13 @@ export async function buildContent(type: OutputType, input: string) {
       else if (expression.startsWith("{{")) {
         // json
         output = output.replace(key, "{}");
-        outputArgs.push(stringifyRustJson(expression.slice(2, -2)));
+        outputArgs.push(stringifyRustJson(expression.slice(2, -2), false));
+      }
+
+      else if (expression.startsWith("{[")) {
+        // json
+        output = output.replace(key, "{}");
+        outputArgs.push(stringifyRustJson(expression.slice(2, -2), true));
       }
 
       else {

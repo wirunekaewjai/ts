@@ -21,20 +21,27 @@ export function buildFunction(
   const fnArgs = collectFunctionArgs(type, template.args, fnInterfaces.map);
   const fnPropsTypes = generatePropsTypes(type, fnInterfaces.fields);
 
-  const fnLines: string[] = [];
+  const fnImports: string[] = [];
+  const fnHeaders: string[] = [];
+  const fnBodies: string[] = [];
 
+  // Imports
   if (type === OutputType.RS_MACRO && template.content.includes("html!")) {
-    fnLines.push("use html_to_string_macro::html;");
-    fnLines.push("");
+    fnImports.push("use html_to_string_macro::html;");
   }
 
+  if ((type === OutputType.RS_MACRO || type === OutputType.RS_STRING) && template.content.includes("format_json!")) {
+    fnImports.push("use crate::format_json;");
+  }
+
+  // Interfaces / Struct
   if (fnPropsTypes) {
-    fnLines.push(fnPropsTypes);
-    fnLines.push("");
+    fnHeaders.push(fnPropsTypes);
   }
 
+  // Body
   if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
-    fnLines.push(
+    fnBodies.push(
       `pub fn ${fnName}(${fnArgs}) -> String {`,
       `    return ${template.content}`,
       `}`,
@@ -42,15 +49,35 @@ export function buildFunction(
   }
 
   else {
-    fnLines.push(
+    fnBodies.push(
       `export const ${fnName} = (${fnArgs}) => ${template.content}`,
     );
   }
 
+  fnBodies.push("");
+
   if (template.footer) {
-    fnLines.push("");
-    fnLines.push(template.footer);
+    fnBodies.push(template.footer);
+    fnBodies.push("");
   }
 
-  return fnLines.join("\n").trim() + "\n";
+  const a = fnImports.join("\n").trim();
+  const b = fnHeaders.join("\n").trim();
+  const c = fnBodies.join("\n").trim();
+
+  const fnLines: string[] = [];
+
+  if (a) {
+    fnLines.push(a);
+  }
+
+  if (b) {
+    fnLines.push(b);
+  }
+
+  if (c) {
+    fnLines.push(c);
+  }
+
+  return fnLines.join("\n\n") + "\n";
 }

@@ -1,15 +1,20 @@
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { styleText } from "node:util";
-import { getEscape } from "../helpers/escape";
+import { getFormatJsonMacro } from "../macros/format-json";
 import { OutputType } from "../types";
 
-export async function generateRustHelpers(parent: string) {
-  const outPath = path.join(parent, "helper.rs");
+export async function generateRustMacros(parent: string) {
+  const outDir = "tiny_tsx";
+  const outPath = path.join(parent, outDir, "macros.rs");
   const output = [
-    getEscape(OutputType.RS_MACRO),
+    getFormatJsonMacro(OutputType.RS_MACRO),
   ];
+
+  await mkdir(path.join(parent, outDir), {
+    recursive: true,
+  });
 
   const exists = existsSync(outPath);
   await writeFile(outPath, output.join("\n\n"), "utf8");

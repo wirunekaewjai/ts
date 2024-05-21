@@ -33,7 +33,10 @@ export async function generateRustModules(parent: string, startAt: number) {
       }
 
       mods.push(`mod ${name};`);
-      uses.push(`pub use ${name}::*;`);
+
+      if (name !== "macros") {
+        uses.push(`pub use ${name}::*;`);
+      }
     }
   }
 

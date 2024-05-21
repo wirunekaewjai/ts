@@ -14,7 +14,7 @@ function isString(input: string) {
   return a.startsWith('"');
 }
 
-function serializeArray(input: string, startAt: number, replacer?: (value: string) => string) {
+export function serializeJsonArray(input: string, startAt: number, replacer?: (value: string) => string) {
   let cursor = startAt;
   let output: string[] = [];
   let buffer = "";
@@ -41,7 +41,7 @@ function serializeArray(input: string, startAt: number, replacer?: (value: strin
     if (ch === "{") {
       buffer = "";
 
-      const result = serializeJsonObject(input, cursor);
+      const result = serializeJsonObject(input, cursor, replacer);
 
       cursor = result.cursor;
       output.push(result.output);
@@ -52,7 +52,7 @@ function serializeArray(input: string, startAt: number, replacer?: (value: strin
     if (ch === "[") {
       buffer = "";
 
-      const result = serializeArray(input, cursor);
+      const result = serializeJsonArray(input, cursor, replacer);
 
       cursor = result.cursor;
       output.push(result.output);
@@ -106,11 +106,15 @@ export function serializeJsonObject(input: string, startAt: number, replacer?: (
       return;
     }
 
+    if (!output.endsWith("{")) {
+      output += ",";
+    }
+
     if (isVar(buffer)) {
       // output += `${QUOTE}${buffer}${QUOTE}:`;
-      output += `"${buffer}"`;
+      output += `"${buffer}":`;
     } else {
-      output += buffer;//`${buffer.replace(/"/g, QUOTE)}:`;
+      output += `${buffer}:`;//`${buffer.replace(/"/g, QUOTE)}:`;
       buffer = "";
     }
   };
@@ -135,7 +139,7 @@ export function serializeJsonObject(input: string, startAt: number, replacer?: (
     const ch = input[cursor++];
 
     if (ch === "{") {
-      const result = serializeJsonObject(input, cursor);
+      const result = serializeJsonObject(input, cursor, replacer);
 
       cursor = result.cursor;
       output += result.output;
@@ -144,7 +148,7 @@ export function serializeJsonObject(input: string, startAt: number, replacer?: (
     }
 
     if (ch === "[") {
-      const result = serializeArray(input, cursor);
+      const result = serializeJsonArray(input, cursor, replacer);
 
       cursor = result.cursor;
       output += result.output;
