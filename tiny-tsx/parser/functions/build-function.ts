@@ -61,7 +61,7 @@ export function buildFunction(
 
   else {
     fnBodies.push(
-      `export const ${fnName} = (${fnArgs}) => \`${template.content}\``,
+      `export const ${fnName} = (${fnArgs}) => \`${template.content}\`;`,
     );
   }
 
