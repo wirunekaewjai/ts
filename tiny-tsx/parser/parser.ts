@@ -11,7 +11,6 @@ import { getExtension } from "./functions/get-extension";
 import { glob } from "./functions/glob";
 import { cleanupTemp, prepareTemp } from "./functions/jsx-to-string";
 import { parse } from "./functions/parse";
-import { stripComment } from "./functions/strip-comment";
 import { toLowerSnakeCase } from "./functions/to-lower-snake-case";
 import { OutputType, type Config } from "./types";
 
@@ -29,8 +28,7 @@ export class TinyTsxParser {
     const srcData: Record<string, string> = {};
 
     for (const srcFilePath of srcFilePaths) {
-      const data = await Bun.file(path.join(srcDir, srcFilePath)).text();
-      srcData[srcFilePath] = stripComment(data);
+      srcData[srcFilePath] = await Bun.file(path.join(srcDir, srcFilePath)).text();
     }
 
     await prepareTemp();

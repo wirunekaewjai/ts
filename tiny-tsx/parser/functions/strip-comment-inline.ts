@@ -1,4 +1,4 @@
-export function skipCommentInline(input: string, startAt: number) {
+export function stripCommentInline(input: string, startAt: number) {
   let cursor = startAt;
   let buffer = "";
 

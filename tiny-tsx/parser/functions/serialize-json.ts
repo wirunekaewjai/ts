@@ -1,6 +1,6 @@
 // const QUOTE = "&quot;";
 
-import { skipCommentInline } from "./skip-comment-inline";
+import { stripCommentInline } from "./strip-comment-inline";
 
 function isVar(input: string) {
   try {
@@ -88,7 +88,7 @@ export function serializeJsonArray(input: string, startAt: number, replacer?: (v
     if (buffer.endsWith("//")) {
       buffer = buffer.slice(0, -2);
 
-      const res = skipCommentInline(input, cursor);
+      const res = stripCommentInline(input, cursor);
 
       buffer += res.output;
       cursor = res.cursor;
@@ -201,7 +201,7 @@ export function serializeJsonObject(input: string, startAt: number, replacer?: (
     if (buffer.endsWith("//")) {
       buffer = buffer.slice(0, -2);
 
-      const res = skipCommentInline(input, cursor);
+      const res = stripCommentInline(input, cursor);
 
       buffer += res.output;
       cursor = res.cursor;
