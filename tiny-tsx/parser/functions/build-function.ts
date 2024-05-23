@@ -28,21 +28,21 @@ export function buildFunction(
   const fnHeaders: string[] = [];
   const fnBodies: string[] = [];
 
+  const useMacros: string[] = [];
+
   // Imports
-  if (type === OutputType.RS_MACRO && template.content.includes("html!")) {
-    fnImports.push("use html_to_string_macro::html;");
+  if (type === OutputType.RS_HTML && template.content.includes("json_esc!")) {
+    fnImports.push("use crate::json_esc;");
+    useMacros.push("json_esc");
   }
 
-  if ((type === OutputType.RS_MACRO || type === OutputType.RS_STRING) && template.content.includes("escape_quot!")) {
-    fnImports.push("use crate::escape_quot;");
-  }
-
-  if ((type === OutputType.TS_JSX || type === OutputType.TS_STRING) && template.content.includes("escape_quot(")) {
+  if (type === OutputType.TS_HTML && template.content.includes("json_esc(")) {
     const outParentPath = path.dirname(outPath);
-    const macroPath = path.join(outDir, "tiny_tsx/macros");
+    const macroPath = path.join(outDir, "tiny_tsx_macros/json_esc");
     const relativePath = path.relative(outParentPath, macroPath);
 
-    fnImports.push(`import { escape_quot } from "./${relativePath}";`);
+    fnImports.push(`import { json_esc } from "./${relativePath}";`);
+    useMacros.push("json_esc");
   }
 
   // Interfaces / Struct
@@ -51,17 +51,17 @@ export function buildFunction(
   }
 
   // Body
-  if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
+  if (type === OutputType.RS_HTML) {
     fnBodies.push(
       `pub fn ${fnName}(${fnArgs}) -> String {`,
-      `    return ${template.content}`,
+      `    return ${template.content};`,
       `}`,
     );
   }
 
   else {
     fnBodies.push(
-      `export const ${fnName} = (${fnArgs}) => ${template.content}`,
+      `export const ${fnName} = (${fnArgs}) => \`${template.content}\``,
     );
   }
 
@@ -90,5 +90,8 @@ export function buildFunction(
     fnLines.push(c);
   }
 
-  return fnLines.join("\n\n") + "\n";
+  return {
+    macros: useMacros,
+    output: fnLines.join("\n\n") + "\n",
+  };
 }

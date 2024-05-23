@@ -57,7 +57,7 @@ export function collectFunctionArgs(type: OutputType, items: string[], map: Map<
       argType = map.get(argType)!;
     }
 
-    else if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
+    else if (type === OutputType.RS_HTML) {
       argType = getRustType(argType);
     }
 

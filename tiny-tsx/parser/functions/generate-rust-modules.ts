@@ -34,7 +34,7 @@ export async function generateRustModules(parent: string, startAt: number) {
 
       mods.push(`mod ${name};`);
 
-      if (name !== "macros") {
+      if (!parent.includes("tiny_tsx_macros")) {
         uses.push(`pub use ${name}::*;`);
       }
     }
@@ -64,7 +64,6 @@ export async function generateRustModules(parent: string, startAt: number) {
 
   const outPath = path.join(parent, "mod.rs");
   const output = lines.join("\n\n") + "\n";
-  // const fmt = await $`echo "${modCode}" | rustfmt`.text();
 
   const exists = existsSync(outPath);
   await writeFile(outPath, output, "utf8");

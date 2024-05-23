@@ -41,8 +41,10 @@ export class TinyTsxParser {
       const outExt = getExtension(outType);
       const namespace = config.namespace ?? "";
 
-      const isRust = outType === OutputType.RS_MACRO || outType === OutputType.RS_STRING;
+      const isRust = outType === OutputType.RS_HTML;
       const isTs = !isRust;
+
+      const macros: string[] = [];
 
       for (const srcFilePath of srcFilePaths) {
         const srcPathObj = path.parse(srcFilePath);
@@ -57,9 +59,9 @@ export class TinyTsxParser {
 
         try {
           const data = srcData[srcFilePath];
-          const code = await parse(outDir, outPath, namespace, srcPathObj.name, outType, data);
+          const result = await parse(outDir, outPath, namespace, srcPathObj.name, outType, data);
 
-          if (!code) {
+          if (!result?.output) {
             if (exists) {
               await rm(outPath, {
                 force: true,
@@ -78,7 +80,7 @@ export class TinyTsxParser {
             recursive: true,
           });
 
-          const output = "// AUTO GENERATED\n" + code;
+          const output = "// AUTO GENERATED\n" + result.output;
           await writeFile(outPath, output, "utf8");
 
           if (exists) {
@@ -86,6 +88,14 @@ export class TinyTsxParser {
           } else {
             console.log(styleText("green", `+ ${outPath}`));
           }
+
+          result.macros.forEach((macro) => {
+            if (macros.includes(macro)) {
+              return;
+            }
+
+            macros.push(macro);
+          });
         } catch (err) {
           console.log(styleText("red", `! ${outPath}`));
           console.log(err);
@@ -94,15 +104,15 @@ export class TinyTsxParser {
       }
 
       if (isTs) {
-        await generateTypescriptMacros(outDir);
+        await generateTypescriptMacros(outDir, macros);
       }
 
       if (isRust) {
-        await generateRustMacros(outDir);
+        await generateRustMacros(outDir, macros);
         await generateRustModules(outDir, startAt);
       }
 
-      if (outType === OutputType.RS_STRING) {
+      if (outType === OutputType.RS_HTML) {
         await $`rustfmt ${path.join(outDir, "**/*.rs")}`.catch();
       }
 

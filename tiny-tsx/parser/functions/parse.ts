@@ -1,6 +1,7 @@
 import { OutputType } from "../types";
-import { buildContent } from "./build-content";
 import { buildFunction } from "./build-function";
+import { buildRustContent } from "./build-rust-content";
+import { buildTypescriptContent } from "./build-typescript-content";
 import { extractTemplate } from "./extract-template";
 
 export async function parse(
@@ -18,10 +19,20 @@ export async function parse(
     return null;
   }
 
-  const isString = type === OutputType.RS_STRING || type === OutputType.TS_STRING;
+  let content = await buildTypescriptContent(template.content);
 
-  const content = await buildContent(type, template.content);
-  const footer = isString ? `/*\n${template.content}\n*/` : "";
+  if (!content) {
+    return null;
+  }
+
+  if (type === OutputType.RS_HTML) {
+    content = await buildRustContent(content);
+    content = content.replaceAll("json!(", "json_esc!(");
+  } else {
+    content = content.replaceAll("json!(", "json_esc(");
+  }
+
+  const footer = `/*\n${template.content}\n*/`;
 
   return buildFunction(outDir, outPath, namespace, name, type, {
     interfaces: template.interfaces,

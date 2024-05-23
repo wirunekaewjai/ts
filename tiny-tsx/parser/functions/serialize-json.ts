@@ -1,5 +1,7 @@
 // const QUOTE = "&quot;";
 
+import { skipCommentInline } from "./skip-comment-inline";
+
 function isVar(input: string) {
   try {
     JSON.parse(input);
@@ -82,6 +84,17 @@ export function serializeJsonArray(input: string, startAt: number, replacer?: (v
     }
 
     buffer += ch;
+
+    if (buffer.endsWith("//")) {
+      buffer = buffer.slice(0, -2);
+
+      const res = skipCommentInline(input, cursor);
+
+      buffer += res.output;
+      cursor = res.cursor;
+
+      continue;
+    }
   }
 
   if (buffer.length > 0) {
@@ -184,6 +197,17 @@ export function serializeJsonObject(input: string, startAt: number, replacer?: (
     }
 
     buffer += ch;
+
+    if (buffer.endsWith("//")) {
+      buffer = buffer.slice(0, -2);
+
+      const res = skipCommentInline(input, cursor);
+
+      buffer += res.output;
+      cursor = res.cursor;
+
+      continue;
+    }
   }
 
   if (buffer.length > 0) {

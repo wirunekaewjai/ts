@@ -3,7 +3,7 @@ import { OutputType } from "../types";
 export function generatePropsTypes(type: OutputType, interfaces: Map<string, string[][]>) {
   const items: string[] = [];
 
-  if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
+  if (type === OutputType.RS_HTML) {
     interfaces.forEach((fields, interfaceName) => {
       items.push(`pub struct ${interfaceName} {`);
 

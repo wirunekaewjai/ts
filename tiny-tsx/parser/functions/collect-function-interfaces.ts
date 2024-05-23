@@ -72,7 +72,7 @@ export function collectFunctionInterfaces(name: string, type: OutputType, items:
         fieldType = interfaceMap.get(fieldType)!;
       }
 
-      else if (type === OutputType.RS_MACRO || type === OutputType.RS_STRING) {
+      else if (type === OutputType.RS_HTML) {
         fieldType = getRustType(fieldType);
       }
 
